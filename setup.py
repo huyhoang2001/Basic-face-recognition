@@ -17,25 +17,21 @@ import time  # thư viện thời gian
 # Chức năng
 # hàm thoát
 
-
 def on_closing():
     if mess.askyesno("Thoát", "Bạn đang thoát khỏi cửa sổ. Bạn có muốn thoát không?"):
         window.destroy()
 # nút xóa text
-
 
 def clear():
     txt.delete(0, 'end')
     txt2.delete(0, 'end')
 # kiểm tra đường dẫn
 
-
 def assure_path_exists(path):
     dir = os.path.dirname(path)
     if not os.path.exists(dir):
         os.makedirs(dir)
 # kiểm tra tệp haarcascade
-
 
 def check_haarcascadefile():
     exists = os.path.isfile("haarcascade_frontalface_default.xml")
@@ -46,7 +42,6 @@ def check_haarcascadefile():
                    message='một số tệp bị thiếu. Vui lòng liên hệ với tôi để được trợ giúp')
         window.destroy()
 # kiểm tra mặt khẩu và đổi mật khẩu
-
 
 def save_pass():
     assure_path_exists("Pass_Train/")
@@ -86,13 +81,12 @@ def save_pass():
     master.destroy()
 # giao diện đổi mật khẩu
 
-
 def change_pass():
     global master
     master = tkinter.Tk()
     master.iconbitmap("laptop.ico")
     master.geometry("400x160")
-    master.resizable(False, False)
+    master.resizable(True, True)
     master.title("Thay đổi mật khẩu quản trị viên")
     master.configure(background="white")
     lbl4 = tkinter.Label(master, text='         Mật khẩu hiện tại',
@@ -124,8 +118,6 @@ def change_pass():
     save1.place(x=10, y=120)
     master.mainloop()
 # câu hỏi mật khẩu
-
-
 def psw():
     assure_path_exists("Pass_Train/")
     exists1 = os.path.isfile("Pass_Train\pass.txt")
@@ -154,7 +146,6 @@ def psw():
         mess._show(title='Sai mật khẩu',
                    message='Bạn đã nhập sai mật khẩu')
 # chụp ảnh
-
 
 def TakeImages():
     check_haarcascadefile()
@@ -188,7 +179,7 @@ def TakeImages():
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             faces = detector.detectMultiScale(gray, 1.3, 5)
             for (x, y, w, h) in faces:
-                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0,238,238), 2)
                 # sô lần tăng của sapleNum
                 sampleNum = sampleNum + 1
                 # lưu khuôn mặt dẫ chụp vào thư mục TrainingImage
@@ -197,10 +188,10 @@ def TakeImages():
                 # hiển thị khung hình
                 cv2.imshow('Taking Images', img)
             # đợi trong 100 mili giây
-            if cv2.waitKey(100) & 0xFF == ord('x'):
+            if cv2.waitKey(50) & 0xFF == ord('x'):
                 break
-            # dừng nếu số lượng ảnh nhiều hơn 100
-            elif sampleNum > 100:
+            # dừng nếu số lượng ảnh nhiều hơn 40
+            elif sampleNum > 40:
                 break
         cam.release()
         cv2.destroyAllWindows()
@@ -217,7 +208,6 @@ def TakeImages():
             message.configure(text=res)
 # xử lí ảnh
 
-
 def TrainImages():
     check_haarcascadefile()
     assure_path_exists("Pass_Train/")
@@ -229,14 +219,13 @@ def TrainImages():
         recognizer.train(faces, np.array(ID))
     except:
         mess._show(title='Không có đăng ký',
-                   message='Please Register someone first!!!')
+                   message='Hãy đăng ký người nào đó trước !!!')
         return
     recognizer.save("Pass_Train\Trainner.yml")
     res = "Hồ sơ đã Lưu thành công"
     message1.configure(text=res)
     message.configure(text='Tổng số đăng ký cho đến nay  : ' + str(ID[0]))
 # lấy Hình ảnh và Nhãn
-
 
 def getImagesAndLabels(path):
     # lấy đường dẫn của tất cả các tệp trong thư mục
@@ -258,7 +247,6 @@ def getImagesAndLabels(path):
         Ids.append(ID)
     return faces, Ids
 # Theo dõi hình ảnh
-
 
 def TrackImages():
     check_haarcascadefile()
@@ -297,7 +285,7 @@ def TrackImages():
         gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(gray, 1.3, 5)
         for (x, y, w, h) in faces:
-            cv2.rectangle(im, (x, y), (x + w, y + h), (255, 255, 255), 2)
+            cv2.rectangle(im, (x, y), (x + w, y + h), (0, 255, 0), 2)
             serial, conf = recognizer.predict(gray[y:y + h, x:x + w])
             if (conf < 50):
                 ts = time.time()
@@ -319,9 +307,10 @@ def TrackImages():
             else:
                 Id = 'Unknown'
                 bb = str(Id)
+                cv2.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 cv2.putText(im, str(bb), (x, y + h + 30),
                             font, 1, (0, 0, 255), 2)
-        cv2.imshow('ĐIỂM DANH', im)
+        cv2.imshow('Diem danh', im)
         if (cv2.waitKey(1) == ord('x')):
             break
     ts = time.time()
@@ -350,15 +339,14 @@ def TrackImages():
     csvFile1.close()
     cam.release()
     cv2.destroyAllWindows()
-
-
+    
 # tạo giao diện
 window = tkinter.Tk()
 window.iconbitmap("laptop.ico")
-window.title("Hệ thóng điểm danh")
-window.geometry("1280x720")
+window.title("Hệ thống điểm danh")
+window.state("zoomed")
 window.resizable(True, True)
-window.configure(background='#355454')
+window.configure(background='#EEEEEE')
 
 # Thanh menu trợ giúp
 menubar = Menu(window)
@@ -372,8 +360,8 @@ menubar.add_cascade(label="Trợ giúp", menu=help)
 window.config(menu=menubar)
 
 # cửa sổ chính
-message3 = tkinter.Label(window, text="Hệ thống điểm danh khuông mặt",
-                         fg="white", bg="#355454", width=60, height=1, font=('times', 29, ' bold '))
+message3 = tkinter.Label(window, text="Hệ Thống Điểm Danh Khuôn Mặt",
+                         fg="black", width=60, height=1, font=('times', 29, ' bold '))
 message3.place(x=10, y=10, relwidth=1)
 
 # khung
@@ -385,11 +373,11 @@ frame2.place(relx=0.51, rely=0.15, relwidth=0.39, relheight=0.80)
 
 # tiêu đề khung
 fr_head1 = tkinter.Label(frame1, text="Đăng ký sinh viên mới",
-                         fg="white", bg="black", font=('times', 17, ' bold '))
+                         fg="white", bg="#CCCCCC", font=('times', 17, ' bold '))
 fr_head1.place(x=0, y=0, relwidth=1)
 
 fr_head2 = tkinter.Label(frame2, text="Điểm danh học sinh",
-                         fg="white", bg="black", font=('times', 17, ' bold '))
+                         fg="white", bg="#CCCCCC", font=('times', 17, ' bold '))
 fr_head2.place(x=0, y=0, relwidth=1)
 
 # khung đăng ký
@@ -434,28 +422,28 @@ if exists:
     csvFile1.close()
 else:
     res = 0
-message.configure(text='Tổng số đăng ký : '+str(res))
+message.configure(text='Tổng số thành viên : '+str(res))
 
 # nút bấm----------------------------------------------
 
-clearButton = tkinter.Button(frame1, text="xóa bộ nhớ cache", command=clear, fg="red",
-                             bg="white", width=11, activebackground="blue", font=('times', 12, ' bold '))
+clearButton = tkinter.Button(frame1, text="xóa bộ nhớ cache", command=clear, fg="blue",
+                             bg="white", bd=5, borderwidth=8, width=11, activebackground="red", font=('times', 12, ' bold '))
 clearButton.place(x=55, y=230, relwidth=0.29)
 
 takeImg = tkinter.Button(frame1, text="Chụp ảnh", command=TakeImages, fg="black",
-                         bg="#00aeff", width=34, height=1, activebackground="white", font=('times', 16, ' bold '))
+                         bg="#00aeff", width=34, height=1, activebackground="white", bd=5, borderwidth=8, font=('times', 16, ' bold '))
 takeImg.place(x=30, y=350, relwidth=0.89)
 
 trainImg = tkinter.Button(frame1, text="Lưu thông tin", command=psw, fg="black", bg="#00aeff",
-                          width=34, height=1, activebackground="white", font=('times', 16, ' bold '))
+                          width=34, height=1, activebackground="white", bd=5, borderwidth=8, font=('times', 16, ' bold '))
 trainImg.place(x=30, y=430, relwidth=0.89)
 
 trackImg = tkinter.Button(frame2, text="Điểm danh", command=TrackImages, fg="black",
-                          bg="#00aeff", height=1, activebackground="white", font=('times', 16, ' bold '))
+                          bg="#00aeff", height=1, activebackground="white", bd=5, borderwidth=8, font=('times', 16, ' bold '))
 trackImg.place(x=30, y=60, relwidth=0.89)
 
 quitWindow = tkinter.Button(frame2, text="Thoát", command=window.destroy, fg="white",
-                            bg="#13059c", width=35, height=1, activebackground="white", font=('times', 16, ' bold '))
+                            bg="#13059c", width=35, height=1, activebackground="red", bd=5, borderwidth=8, font=('times', 16, ' bold '))
 quitWindow.place(x=30, y=450, relwidth=0.89)
 
 
